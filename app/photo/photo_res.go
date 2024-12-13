@@ -1,7 +1,7 @@
 package photo
 
 import (
-    "github.com/Didik2584/task-5-pbi-btpns-Didik_Kurniawan/models"
+    "github.com/Didik2584/task-5-pbi-btpns-Didik_kurniawan/models"
     "errors"
 )
 

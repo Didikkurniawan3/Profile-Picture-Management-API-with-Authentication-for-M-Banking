@@ -22,7 +22,6 @@ func NewPhotoController(db *gorm.DB) *PhotoController {
 func (h *PhotoController) Get(c *gin.Context) {
 	var userPhoto models.Photo
 	err := h.db.Preload("User").First(&userPhoto).Error
-
 	if err != nil {
 		response := helpers.ApiResponse(http.StatusBadRequest, "error", nil, "Failed to Get Your Photo")
 		c.JSON(http.StatusBadRequest, response)
@@ -35,7 +34,13 @@ func (h *PhotoController) Get(c *gin.Context) {
 		return
 	}
 
-	formatter := photoRes.FormatPhoto(&userPhoto, "")
+	formatter, err := photoRes.FormatPhoto(&userPhoto, "")
+	if err != nil {
+		response := helpers.ApiResponse(http.StatusInternalServerError, "error", nil, "Failed to format photo")
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
 	response := helpers.ApiResponse(http.StatusOK, "success", formatter, "Successfully Fetch User Photo")
 	c.JSON(http.StatusOK, response)
 }
@@ -60,7 +65,6 @@ func (h *PhotoController) Create(c *gin.Context) {
 	if err != nil {
 		errors := helpers.FormatValidationError(err)
 		errorMessages := gin.H{"errors": errors}
-
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", errorMessages, "Failed to Upload User Photo")
 		c.JSON(http.StatusBadRequest, response)
 		return
@@ -70,7 +74,6 @@ func (h *PhotoController) Create(c *gin.Context) {
 	if err != nil {
 		errors := helpers.FormatValidationError(err)
 		errorMessages := gin.H{"errors": errors}
-
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", errorMessages, "Failed to Upload User Photo")
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
@@ -82,7 +85,6 @@ func (h *PhotoController) Create(c *gin.Context) {
 	err = c.SaveUploadedFile(file, path)
 	if err != nil {
 		data := gin.H{"is_uploaded": false}
-
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", data, "Failed to Upload User Photo")
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
@@ -128,7 +130,6 @@ func (h *PhotoController) Update(c *gin.Context) {
 	file, err := c.FormFile("update_profile")
 	if err != nil {
 		data := gin.H{"is_uploaded": false}
-
 		response := helpers.ApiResponse(http.StatusUnprocessableEntity, "error", data, "Failed to Update User Photo")
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
@@ -146,7 +147,13 @@ func (h *PhotoController) Update(c *gin.Context) {
 
 	h.UpdatePhoto(input, &userPhoto, path)
 
-	data := photoRes.FormatPhoto(&userPhoto, "regular")
+	data, err := photoRes.FormatPhoto(&userPhoto, "regular")
+	if err != nil {
+		response := helpers.ApiResponse(http.StatusInternalServerError, "error", nil, "Failed to format photo")
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
 	response := helpers.ApiResponse(http.StatusOK, "success", data, "Photo Profile Successfully Updated")
 	c.JSON(http.StatusOK, response)
 }
@@ -168,7 +175,6 @@ func (h *PhotoController) Delete(c *gin.Context) {
 		data := gin.H{
 			"is_deleted": false,
 		}
-
 		response := helpers.ApiResponse(http.StatusBadRequest, "error", data, "Failed to delete user photo")
 		c.JSON(http.StatusBadRequest, response)
 		return

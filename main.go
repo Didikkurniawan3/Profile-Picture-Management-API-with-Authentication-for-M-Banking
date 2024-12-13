@@ -8,20 +8,22 @@ import (
 )
 
 func main() {
+	// Initialize the database connection
+	db := database.InitDB()
 
-	db, err := database.InitDB()
-	if err != nil {
-		log.Fatalf("Failed to connect to the database: %v", err)
+	// Check if the DB connection was successful
+	if db == nil {
+		log.Fatal("Failed to connect to the database")
 	}
 
-	err = database.MigrateDB(db)
-	if err != nil {
-		log.Fatalf("Failed to migrate the database: %v", err)
-	}
+	// Run database migrations (no return value expected)
+	database.MigrateDB(db)
 
-	r := router.RouteInit(db)
-	err = r.Run(":9000")
-	if err != nil {
+	// Initialize the router (adjust the arguments if needed)
+	r := router.RouteInit()
+
+	// Start the server on port 9000
+	if err := r.Run(":9000"); err != nil {
 		log.Fatalf("Failed to start the server: %v", err)
 	}
 }
